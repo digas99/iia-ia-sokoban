@@ -1,6 +1,3 @@
-requests
-pygame
-aiohttp
-async-timeout
-websockets
-yarl
+flask_sqlalchemy
+flask_marshmallow
+flask
