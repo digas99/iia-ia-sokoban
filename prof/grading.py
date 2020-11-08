@@ -54,11 +54,12 @@ def add_game():
 
     score = 10000 * int(puzzles) - int(total_pushes)*100 - int(total_steps)
 
-    print(player, level, score, papertrail)
+    print(player, level, puzzles, score, papertrail)
     new_game = Game(player, level, puzzles, total_steps, total_moves, total_pushes, score)
 
-    db.session.add(new_game)
-    db.session.commit()
+    if puzzles == level-1:
+        db.session.add(new_game)
+        db.session.commit()
 
     return game_schema.jsonify(new_game)
 
