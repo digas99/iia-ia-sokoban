@@ -57,7 +57,7 @@ def add_game():
     print(player, level, puzzles, score, papertrail)
     new_game = Game(player, level, puzzles, total_steps, total_moves, total_pushes, score)
 
-    if puzzles == level-1:
+    if puzzles == level:
         db.session.add(new_game)
         db.session.commit()
 
