@@ -44,12 +44,13 @@ games_schema = GameSchema(many=True)
 def add_game():
     player = request.json['player']
     level = request.json['level']
+    puzzles = request.json.get('puzzles', level)
     total_steps = request.json.get('total_steps', -1)
     total_moves = request.json.get('total_moves', -1)
     total_pushes = request.json.get('total_pushes', -1)
     papertrail = request.json.get('papertrail', "")
 
-    score = 10000 * int(level) - int(total_pushes)*100 - int(total_steps)
+    score = 10000 * int(puzzles) - int(total_pushes)*100 - int(total_steps)
 
     print(player, level, score, papertrail)
     new_game = Game(player, level, total_steps, total_moves, total_pushes, score)
