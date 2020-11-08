@@ -16,14 +16,16 @@ class Game(db.Model):
     timestamp = db.Column(db.DateTime, server_default=db.func.now())
     player = db.Column(db.String(25))
     level = db.Column(db.Integer)
+    puzzles = db.Column(db.Integer)
     total_steps = db.Column(db.Integer)
     total_moves = db.Column(db.Integer)
     total_pushes = db.Column(db.Integer)
     score = db.Column(db.Integer)
 
-    def __init__(self, player, level, total_steps, total_moves, total_pushes, score):
+    def __init__(self, player, level, puzzles, total_steps, total_moves, total_pushes, score):
         self.player = player
         self.level = level
+        self.puzzles = puzzles
         self.total_steps = total_steps
         self.total_moves = total_moves
         self.total_pushes = total_pushes
@@ -32,7 +34,7 @@ class Game(db.Model):
 class GameSchema(ma.Schema):
     class Meta:
         # Fields to expose
-        fields = ('id', 'timestamp', 'player', 'level', 'total_steps', 'total_moves', 'total_pushes', 'score')
+        fields = ('id', 'timestamp', 'player', 'level', 'puzzles', 'total_steps', 'total_moves', 'total_pushes', 'score')
 
 
 game_schema = GameSchema()
@@ -53,7 +55,7 @@ def add_game():
     score = 10000 * int(puzzles) - int(total_pushes)*100 - int(total_steps)
 
     print(player, level, score, papertrail)
-    new_game = Game(player, level, total_steps, total_moves, total_pushes, score)
+    new_game = Game(player, level, puzzles, total_steps, total_moves, total_pushes, score)
 
     db.session.add(new_game)
     db.session.commit()
@@ -80,7 +82,7 @@ def get_game():
 # endpoint to show player games
 @app.route("/highscores/<player>", methods=["GET"])
 def game_detail(player):
-    game = db.session.query(Game).filter(and_(Game.player == player, Game.score > 0)).order_by(Game.score.desc()).limit(10)
+    game = db.session.query(Game).filter(and_(Game.player == player, Game.score > 20)).order_by(Game.score.desc()).limit(10)
     result = games_schema.dump(game)
     return jsonify(result)
 
