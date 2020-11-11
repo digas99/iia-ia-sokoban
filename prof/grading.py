@@ -4,6 +4,8 @@ from flask_marshmallow import Marshmallow
 import os
 from sqlalchemy import and_, func
 
+from ..game import reduce_score
+
 app = Flask(__name__, static_url_path='')
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'grades.sqlite')
@@ -20,21 +22,23 @@ class Game(db.Model):
     total_steps = db.Column(db.Integer)
     total_moves = db.Column(db.Integer)
     total_pushes = db.Column(db.Integer)
+    box_on_goal = db.Column(db.Integer)
     score = db.Column(db.Integer)
 
-    def __init__(self, player, level, puzzles, total_steps, total_moves, total_pushes, score):
+    def __init__(self, player, level, puzzles, total_steps, total_moves, total_pushes, box_on_goal, score):
         self.player = player
         self.level = level
         self.puzzles = puzzles
         self.total_steps = total_steps
         self.total_moves = total_moves
         self.total_pushes = total_pushes
+        self.box_on_goal = box_on_goal
         self.score = score
 
 class GameSchema(ma.Schema):
     class Meta:
         # Fields to expose
-        fields = ('id', 'timestamp', 'player', 'level', 'puzzles', 'total_steps', 'total_moves', 'total_pushes', 'score')
+        fields = ('id', 'timestamp', 'player', 'level', 'puzzles', 'total_steps', 'total_moves', 'total_pushes', 'box_on_goal', 'score')
 
 
 game_schema = GameSchema()
@@ -50,12 +54,13 @@ def add_game():
     total_steps = request.json.get('total_steps', -1)
     total_moves = request.json.get('total_moves', -1)
     total_pushes = request.json.get('total_pushes', -1)
+    box_on_goal = request.json.get('box_on_goal', 0)
     papertrail = request.json.get('papertrail', "")
 
-    score = 10000 * int(puzzles) - int(total_pushes)*100 - int(total_steps)
+    score = reduce_score(puzzles, total_moves, total_pushes, total_steps, box_on_goal)
 
     print(player, level, puzzles, score, papertrail)
-    new_game = Game(player, level, puzzles, total_steps, total_moves, total_pushes, score)
+    new_game = Game(player, level, puzzles, total_steps, total_moves, total_pushes, box_on_goal, score)
 
     if puzzles == level:
         db.session.add(new_game)
